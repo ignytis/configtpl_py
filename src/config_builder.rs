@@ -1,4 +1,4 @@
-use std::sync::{LazyLock, Mutex};
+use std::{collections::HashMap, sync::{LazyLock, Mutex}};
 
 use pyo3::{
     exceptions::PyRuntimeError,
@@ -36,14 +36,23 @@ impl ConfigBuilder {
         instance
     }
 
-    pub fn render(&self, py: Python, paths: Vec<String>) -> PyResult<PyObject> {
+    #[pyo3(signature = (defaults, env_vars_prefix, overrides, paths))]
+    pub fn build(&self, py: Python, defaults: Option<&Bound<'_, PyDict>>, env_vars_prefix: Option<String>,
+                 overrides: Option<&Bound<'_, PyDict>>, paths: Option<Vec<String>>) -> PyResult<Py<PyAny>> {
         let builders = CFG_BUILDERS.lock().unwrap();
         let builder = match builders[self.handle].as_ref() {
             Some(builder) => builder,
             None => return Err(PyErr::new::<PyRuntimeError, _>(format!("Invalid builder handle: {}", self.handle))),
         };
-        let args = BuildArgs::default()
-            .with_paths(paths);
+
+        let mut args = BuildArgs::default();
+        if let Some(v) = paths {
+            args = args.with_paths(v);
+        }
+        if let Some(v) = env_vars_prefix {
+            args = args.with_env_vars_prefix(v);
+        }
+
 
         match builder.build(&args) {
             Ok(cfg) => config_param_to_pyany(py, &cfg),
@@ -52,7 +61,7 @@ impl ConfigBuilder {
     }
 }
 
-fn config_param_to_pyany(py: Python, config_param: &ConfigParam) -> PyResult<PyObject> {
+fn config_param_to_pyany(py: Python, config_param: &ConfigParam) -> PyResult<Py<PyAny>> {
     match config_param {
         // Booleans somehow cannot be casted the same way as other types
         ConfigParam::Boolean(v) => match PyBool::new(py, *v).cast() {
