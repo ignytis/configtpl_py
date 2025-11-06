@@ -26,14 +26,21 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
-  "flake8",
-  "flake8-quotes",
+  # NB: keep it the same as in pre-commit-config.yaml
+  "ruff==0.14.3",
   "pytest",
   "pre_commit",
 ]
 
 [project.urls]
-Homepage = "https://github.com/ignytis/py_configtpl"
+Homepage = "https://github.com/ignytis/configtpl_py"
 
 [tool.hatch.build]
 only-packages = true
+
+[tool.pyright]
+reportArgumentType = false
+reportMissingTypeStubs = false
+reportMissingTypeArgument = false
+reportUnknownMemberType = false
+reportUnknownVariableType = false
