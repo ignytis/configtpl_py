@@ -9,7 +9,7 @@ class TestSimple(unittest.TestCase):
     return super().setUp()
 
   def test_simple(self) -> None:
-    cfg = ConfigBuilder().build_from_files("config.cfg")
+    cfg = ConfigBuilder().build_from_files(["config.cfg"])
 
     assert cfg == {
       "urls": {

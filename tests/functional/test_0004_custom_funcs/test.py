@@ -24,7 +24,7 @@ class TestCustomFuncs(unittest.TestCase):
     builder = ConfigBuilder()
     builder.set_filter("str_rev", str_rev)
     builder.set_global("gen_seq", gen_seq)
-    cfg = builder.build_from_files("config.cfg")
+    cfg = builder.build_from_files(["config.cfg"])
 
     assert cfg == {
       "simple_value": "abc",

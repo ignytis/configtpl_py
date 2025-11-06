@@ -50,7 +50,7 @@ class ConfigBuilder:
 
   def build_from_files(
     self,
-    paths_colon_separated: str | list[str],
+    paths: list[str],
     overrides: dict | None = None,
     ctx: dict | None = None,
   ) -> dict:
@@ -60,11 +60,8 @@ class ConfigBuilder:
     Args:
         ctx (dict | None): additional rendering context which is NOT injected into configuration
         overrides (dict | None): Overrides are applied at the very end stage after all templates are rendered
-        paths_colon_separated (str | list[str]): Paths to configuration files.
-            It might be a single item (str) or list of paths (list(str)).
-            Additionally, each path might be colon-separated.
-            Examples: '/opt/myapp/myconfig.cfg', '/opt/myapp/myconfig_first.cfg:/opt/myapp/myconfig_second.cfg',
-            ['/opt/myapp/myconfig.cfg', '/opt/myapp/myconfig_first.cfg:/opt/myapp/myconfig_second.cfg']
+        paths (list[str]): Paths to configuration files. Examples:
+            ['/opt/myapp/myconfig_first.cfg', '/opt/myapp/myconfig_second.cfg']
     Returns:
         dict: The rendered configuration
     """
@@ -73,13 +70,6 @@ class ConfigBuilder:
       ctx = {}
     if overrides is None:
       overrides = {}
-    # Convert the path input into list of paths
-    paths_colon_separated: list[str] = (
-      [paths_colon_separated] if isinstance(paths_colon_separated, str) else paths_colon_separated
-    )
-    paths: list[str] = []
-    for path_colon_separated in paths_colon_separated:
-      paths += path_colon_separated.split(":")
 
     for cfg_path_raw in paths:
       cfg_path = os.path.realpath(cfg_path_raw)
@@ -113,7 +103,7 @@ class ConfigBuilder:
         dict: The rendered configuration
     """
     if work_dir is None:
-      work_dir = Path.cwd()
+      work_dir = str(Path.cwd())
     if ctx is None:
       ctx = {}
     if overrides is None:
