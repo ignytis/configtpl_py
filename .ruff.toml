@@ -41,11 +41,30 @@ target-version = "py311"
 # McCabe complexity (`C901`) by default.
 select = ["ALL"]
 ignore = [
-    "D",
+    "D", # docstrings
+    "FIX002", # TODO comments
     "S324",
-    "S602"
+    "S602",
+
+    "TD", # TODO
 ]
 
 
 [lint.flake8-annotations]
 mypy-init-return = true
+
+
+[lint.per-file-ignores]
+"tests/*" = [
+    "INP001",  # file.py is part of implicit namespace package
+
+    "PLR2004", # magic values
+
+    "PT019", # no fixture attached
+
+    "S101", # use of assert in test
+]
+
+"launcher.py" = [
+    "T201", # print statement
+]

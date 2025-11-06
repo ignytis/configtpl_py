@@ -39,8 +39,13 @@ Homepage = "https://github.com/ignytis/configtpl_py"
 only-packages = true
 
 [tool.pyright]
+reportAny = false
 reportArgumentType = false
+reportImplicitOverride = false
 reportMissingTypeStubs = false
 reportMissingTypeArgument = false
+reportUnknownArgumentType = false
+reportUnknownLambdaType = false
 reportUnknownMemberType = false
 reportUnknownVariableType = false
+reportUnusedCallResult = false

@@ -31,46 +31,40 @@ CONFIG_COMPILED_SIMPLE = {
 @patch("os.path.isfile", return_value=True)
 @patch("os.path.getmtime", return_value=123)
 class CompilerTest(TestCase):
-  def __init__(self, methodName="runTest"):
-    super().__init__(methodName)
+  def __init__(self, method_name: str = "runTest") -> None:
+    super().__init__(method_name)
     self.maxDiff = None
 
   @patch("builtins.open", new_callable=mock_open, read_data=FILE_CONFIG_CONTENTS_SIMPLE)
-  def test_compile_simple(self, _a, _b, _c, _d, _e) -> None:
-    self.assertDictEqual(CONFIG_COMPILED_SIMPLE, get_instance().build_from_files("/test/sample.cfg"))
+  def test_compile_simple(self, _a: object, _b: object, _c: object, _d: object, _e: object) -> None:
+    assert get_instance().build_from_files("/test/sample.cfg") == CONFIG_COMPILED_SIMPLE
 
   @patch("builtins.open", new_callable=mock_open, read_data=FILE_CONFIG_CONTENTS_SIMPLE)
-  def test_compile_simple_override(self, _a, _b, _c, _d, _e) -> None:
+  def test_compile_simple_override(self, _a: object, _b: object, _c: object, _d: object, _e: object) -> None:
     cfg_compiled = deepcopy(CONFIG_COMPILED_SIMPLE)
     cfg_compiled["params"] = {
       **cfg_compiled["params"],
       "some_param": "some_param_val1",
       "greeting": "Overridden greeting",
     }
-    self.assertDictEqual(
-      cfg_compiled,
-      get_instance().build_from_files(
-        "/test/sample.cfg",
-        overrides={
-          "params": {
-            "some_param": "some_param_val1",
-            "greeting": "Overridden greeting",
-          }
+    assert cfg_compiled == get_instance().build_from_files(
+      "/test/sample.cfg",
+      overrides={
+        "params": {
+          "some_param": "some_param_val1",
+          "greeting": "Overridden greeting",
         },
-      ),
+      },
     )
 
   @patch("builtins.open", new_callable=mock_open, read_data=FILE_CONFIG_CONTENTS_COMPOSITE_FIRST)
-  def test_compile_composite(self, mock_file, _b, _c, _d, _e) -> None:
-    self.assertDictEqual(
-      {
-        "params": {
-          "user_name": "John",
-          "greeting": "Hello, John!",
-        },
+  def test_compile_composite(self, _a: object, _b: object, _c: object, _d: object, _e: object) -> None:
+    assert get_instance().build_from_files("/test/sample.cfg") == {
+      "params": {
+        "user_name": "John",
+        "greeting": "Hello, John!",
       },
-      get_instance().build_from_files("/test/sample.cfg"),
-    )
+    }
 
 
 def get_instance() -> ConfigBuilder:
