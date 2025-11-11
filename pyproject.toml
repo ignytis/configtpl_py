@@ -37,18 +37,3 @@ Homepage = "https://github.com/ignytis/configtpl_py"
 
 [tool.hatch.build]
 only-packages = true
-
-[tool.pyright]
-reportAny = false
-reportArgumentType = false
-reportImplicitOverride = false
-reportMissingTypeStubs = false
-reportMissingTypeArgument = false
-reportRedeclaration = false
-reportUnannotatedClassAttribute = false
-reportUnknownArgumentType = false
-reportUnknownLambdaType = false
-reportUnknownMemberType = false
-reportUnknownParameterType = false
-reportUnknownVariableType = false
-reportUnusedCallResult = false

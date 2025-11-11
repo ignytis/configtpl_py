@@ -14,17 +14,18 @@ from configtpl.utils.dicts import dict_deep_merge
 class ConfigBuilder:
   def __init__(
     self,
-    jinja_constructor_args: dict[str, object] | None = None,
-    jinja_globals: dict[str, object] | None = None,
-    jinja_filters: dict[str, object] | None = None,
-    defaults: dict[str, object] | None = None,
+    jinja_constructor_args: dict | None = None,
+    jinja_globals: dict | None = None,
+    jinja_filters: dict | None = None,
+    defaults: dict | None = None,
   ):
     """
     A constructor for Config Builder.
 
     Args:
-        constructor_args (dict | None): argument for Jinja environment constructor
-        globals (dict | None): globals to inject into Jinja environment
+        jinja_constructor_args (dict | None): argument for Jinja environment constructor
+        jinja_globals (dict | None): globals for Jinja environment constructor
+        jinja_filters (dict | None): filters for Jinja environment constructor
         defaults (dict | None): Default values for configuration
     """
     self.jinja_env_factory: JinjaEnvFactory = JinjaEnvFactory(
@@ -34,7 +35,7 @@ class ConfigBuilder:
     )
     if defaults is None:
       defaults = {}
-    self.defaults: dict[str, object] = defaults
+    self.defaults: dict = defaults
 
   def set_global(self, k: str, v: Callable) -> None:
     """
