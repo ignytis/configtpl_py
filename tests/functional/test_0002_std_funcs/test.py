@@ -1,6 +1,6 @@
 import unittest
 
-from configtpl.config_builder import ConfigBuilder
+from configtpl.main import ConfigTpl
 
 
 class TestStdFunccs(unittest.TestCase):
@@ -14,7 +14,7 @@ class TestStdFunccs(unittest.TestCase):
     return super().setUp()
 
   def test_std_funcs(self) -> None:
-    cfg = ConfigBuilder().build_from_files(["config.cfg"])
+    cfg = ConfigTpl().build_from_files(["config.cfg"])
 
     assert cfg == {
       # file_contents are fetched using 'file' global.

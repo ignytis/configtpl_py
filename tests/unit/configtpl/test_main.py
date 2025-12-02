@@ -2,7 +2,7 @@ from copy import deepcopy
 from unittest import TestCase
 from unittest.mock import mock_open, patch
 
-from configtpl.config_builder import ConfigBuilder
+from configtpl.main import ConfigTpl
 
 FILE_CONFIG_CONTENTS_SIMPLE = """\
 {% set name = "John" %}
@@ -67,5 +67,5 @@ class CompilerTest(TestCase):
     }
 
 
-def get_instance() -> ConfigBuilder:
-  return ConfigBuilder()
+def get_instance() -> ConfigTpl:
+  return ConfigTpl()

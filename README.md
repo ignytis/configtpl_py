@@ -72,9 +72,9 @@ hash: "{{ app.param1 | md5 }}"
 # app.py
 
 import json
-from configtpl.config_builder import ConfigBuilder
+from configtpl.main import ConfigTpl
 
-builder = ConfigBuilder()
+builder = ConfigTpl()
 cfg = builder.build_from_files(["my_first_config.cfg","my_second_config.cfg"])
 print(json.dumps(cfg, indent=2))
 

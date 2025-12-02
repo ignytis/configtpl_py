@@ -1,6 +1,6 @@
 import unittest
 
-from configtpl.config_builder import ConfigBuilder
+from configtpl.main import ConfigTpl
 
 
 class TestCombinedCfg(unittest.TestCase):
@@ -13,7 +13,7 @@ class TestCombinedCfg(unittest.TestCase):
     return super().setUp()
 
   def test_combined_cfg(self) -> None:
-    cfg = ConfigBuilder().build_from_files(
+    cfg = ConfigTpl().build_from_files(
       ["config_01.cfg", "config_02.cfg"],
       ctx={"my_context_dict": {"ctx_param": 1234}},
     )

@@ -1,6 +1,6 @@
 import unittest
 
-from configtpl.config_builder import ConfigBuilder
+from configtpl.main import ConfigTpl
 
 
 class TestSimple(unittest.TestCase):
@@ -9,7 +9,7 @@ class TestSimple(unittest.TestCase):
     return super().setUp()
 
   def test_simple(self) -> None:
-    cfg = ConfigBuilder().build_from_files(["config.cfg"])
+    cfg = ConfigTpl().build_from_files(["config.cfg"])
 
     assert cfg == {
       "urls": {

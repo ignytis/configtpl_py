@@ -1,6 +1,6 @@
 import unittest
 
-from configtpl.config_builder import ConfigBuilder
+from configtpl.main import ConfigTpl
 
 CFG = """\
 {% set domain = "example.com" %}
@@ -25,7 +25,7 @@ class TestRenderStr(unittest.TestCase):
     return super().setUp()
 
   def test_custom_funcs(self) -> None:
-    builder = ConfigBuilder()
+    builder = ConfigTpl()
     cfg = builder.build_from_str(CFG)
     assert cfg == {
       "domain": "example.com",

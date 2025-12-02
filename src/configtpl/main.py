@@ -7,11 +7,11 @@ from pathlib import Path
 import yaml
 from jinja2 import Template
 
-from configtpl.jinja.env_factory import JinjaEnvFactory
-from configtpl.utils.dicts import dict_deep_merge
+from .jinja.env_factory import JinjaEnvFactory
+from .utils.dicts import dict_deep_merge
 
 
-class ConfigBuilder:
+class ConfigTpl:
   def __init__(
     self,
     jinja_constructor_args: dict | None = None,

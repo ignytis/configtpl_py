@@ -1,6 +1,6 @@
 import unittest
 
-from configtpl.config_builder import ConfigBuilder
+from configtpl.main import ConfigTpl
 
 
 def str_rev(text: str) -> str:
@@ -21,7 +21,7 @@ class TestCustomFuncs(unittest.TestCase):
     return super().setUp()
 
   def test_custom_funcs(self) -> None:
-    builder = ConfigBuilder()
+    builder = ConfigTpl()
     builder.set_filter("str_rev", str_rev)
     builder.set_global("gen_seq", gen_seq)
     cfg = builder.build_from_files(["config.cfg"])
