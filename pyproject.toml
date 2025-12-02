@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "configtpl"
-version = "1.0.1"
+version = "2.0.0"
 authors = [
   { name="Ignytis", email="155588001+ignytis@users.noreply.github.com" },
 ]

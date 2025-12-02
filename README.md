@@ -34,13 +34,6 @@ In addition to [Jinja buildin filters](https://tedboy.github.io/jinja2/templ14.h
 
 See also [List of Global Functions](https://tedboy.github.io/jinja2/templ16.html#list-of-global-functions) on Jinja page
 
-                "cmd": jinja_globals.jinja_global_cmd,
-                "cwd": jinja_globals.jinja_global_cwd,
-                "env": jinja_globals.jinja_global_env,
-                "file": jinja_globals.jinja_global_file,
-                "uuid": jinja_globals.jinja_global_uuid,
-
-
 | Function                      | Description                                                    |
 |-------------------------------|----------------------------------------------------------------|
 | cmd(cmd: str)                 | Executes a system command and returns the standard output      |
@@ -82,7 +75,7 @@ import json
 from configtpl.config_builder import ConfigBuilder
 
 builder = ConfigBuilder()
-cfg = builder.build_from_files("my_first_config.cfg:my_second_config.cfg")
+cfg = builder.build_from_files(["my_first_config.cfg","my_second_config.cfg"])
 print(json.dumps(cfg, indent=2))
 
 ```
