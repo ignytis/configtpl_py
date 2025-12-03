@@ -66,11 +66,7 @@ class ConfigTpl:
     Returns:
         dict: The rendered configuration
     """
-    output_cfg = deepcopy(self.defaults)
-    if ctx is None:
-      ctx = {}
-    if overrides is None:
-      overrides = {}
+    output_cfg, ctx, overrides = self._init_render_params(ctx, overrides)
 
     for cfg_path_raw in paths:
       cfg_path = os.path.realpath(cfg_path_raw)
@@ -86,9 +82,8 @@ class ConfigTpl:
     self,
     s: str,
     work_dir: str | None = None,
-    defaults: dict | None = None,
-    ctx: dict | None = None,
     overrides: dict | None = None,
+    ctx: dict | None = None,
   ) -> dict:
     """
     Renders config from string.
@@ -103,14 +98,10 @@ class ConfigTpl:
     Returns:
         dict: The rendered configuration
     """
+    output_cfg, ctx, overrides = self._init_render_params(ctx, overrides)
     if work_dir is None:
       work_dir = str(Path.cwd())
-    if ctx is None:
-      ctx = {}
-    if overrides is None:
-      overrides = {}
 
-    output_cfg = {} if defaults is None else deepcopy(defaults)
     cfg = self._render_cfg_from_str(s, ctx, work_dir)
     output_cfg = dict_deep_merge(cfg, overrides)
 
@@ -131,6 +122,18 @@ class ConfigTpl:
     jinja_env = self.jinja_env_factory.get_fs_jinja_environment(work_dir)
     tpl = jinja_env.from_string(s)
     return _render_tpl(tpl, ctx)
+
+  def _init_render_params(self, ctx: dict | None, overrides: dict | None) -> tuple[dict, dict, dict]:
+    """
+    Initializes rendering parameters.
+    """
+    output_cfg = deepcopy(self.defaults)
+    if ctx is None:
+      ctx = {}
+    if overrides is None:
+      overrides = {}
+
+    return output_cfg, ctx, overrides
 
 
 def _render_tpl(tpl: Template, ctx: dict) -> dict:

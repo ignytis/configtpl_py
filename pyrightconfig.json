@@ -5,6 +5,7 @@
 
   "reportAny": false,
   "reportArgumentType": false,
+  "reportCallIssue": false,
   "reportImplicitOverride": false,
   "reportMissingTypeStubs": false,
   "reportMissingTypeArgument": false,

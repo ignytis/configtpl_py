@@ -13,7 +13,7 @@
 
 - Tsts are runnable from `venv`
 - Unit tests can be executed by command `pytest ./tests/unit/`
-- Functional tests can be executed by command `python ./launcher.py tests:functional`
+- Functional tests can be executed by command `python ./tests/functional/run.py`
 
 ## Workflow
 
