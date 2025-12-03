@@ -21,7 +21,7 @@ for current_dir, _subdirs, _files in os.walk(Path(Path.cwd(), "tests", "function
   try:
     result = subprocess.run(  # noqa: S603
       [sys.executable, test_path],
-      env={"SAMPLE_ENV_KEY": "sample_value"},
+      env={"SAMPLE_ENV_KEY": "sample_value", "MY_APP__TEST": "test_val"},
       capture_output=True,
       text=True,
       cwd=current_dir,

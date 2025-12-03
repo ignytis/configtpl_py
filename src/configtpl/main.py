@@ -14,19 +14,23 @@ from .utils.dicts import dict_deep_merge
 class ConfigTpl:
   def __init__(
     self,
-    jinja_constructor_args: dict | None = None,
-    jinja_globals: dict | None = None,
-    jinja_filters: dict | None = None,
+    *,
     defaults: dict | None = None,
+    env_var_prefix: str | None = None,
+    jinja_constructor_args: dict | None = None,
+    jinja_filters: dict | None = None,
+    jinja_globals: dict | None = None,
   ):
     """
     A constructor for Config Builder.
 
     Args:
+        defaults (dict | None): Default values for configuration
+        env_var_prefix (str | None): if specified, environment variables with
+          this prefix will be injected into config
         jinja_constructor_args (dict | None): argument for Jinja environment constructor
         jinja_globals (dict | None): globals for Jinja environment constructor
         jinja_filters (dict | None): filters for Jinja environment constructor
-        defaults (dict | None): Default values for configuration
     """
     self.jinja_env_factory: JinjaEnvFactory = JinjaEnvFactory(
       constructor_args=jinja_constructor_args,
@@ -35,7 +39,8 @@ class ConfigTpl:
     )
     if defaults is None:
       defaults = {}
-    self.defaults: dict = defaults
+    self.defaults = defaults
+    self.env_var_prefix = env_var_prefix
 
   def set_global(self, k: str, v: Callable) -> None:
     """
@@ -89,10 +94,9 @@ class ConfigTpl:
     Renders config from string.
 
     Args:
-        input (str): a Jinja template string which can be rendered into YAML format
+        s (str): a Jinja template string which can be rendered into YAML format
         work_dir (str): a working directory.
             Include statements in Jinja template will be resolved relatively to this path
-        defaults (dict | None): Default values for configuration
         ctx (dict | None): additional rendering context which is NOT injected into configuration
         overrides (dict | None): Overrides are applied at the very end stage after all templates are rendered
     Returns:
@@ -103,7 +107,7 @@ class ConfigTpl:
       work_dir = str(Path.cwd())
 
     cfg = self._render_cfg_from_str(s, ctx, work_dir)
-    output_cfg = dict_deep_merge(cfg, overrides)
+    output_cfg = dict_deep_merge(output_cfg, cfg)
 
     return dict_deep_merge(output_cfg, overrides)
 
@@ -123,11 +127,17 @@ class ConfigTpl:
     tpl = jinja_env.from_string(s)
     return _render_tpl(tpl, ctx)
 
-  def _init_render_params(self, ctx: dict | None, overrides: dict | None) -> tuple[dict, dict, dict]:
+  def _init_render_params(
+    self,
+    ctx: dict | None,
+    overrides: dict | None,
+  ) -> tuple[dict, dict, dict]:
     """
     Initializes rendering parameters.
     """
     output_cfg = deepcopy(self.defaults)
+    output_cfg = dict_deep_merge(output_cfg, _get_cfg_from_env(self.env_var_prefix))
+
     if ctx is None:
       ctx = {}
     if overrides is None:
@@ -139,3 +149,24 @@ class ConfigTpl:
 def _render_tpl(tpl: Template, ctx: dict) -> dict:
   tpl_rendered = tpl.render(ctx)
   return yaml.safe_load(tpl_rendered)
+
+
+def _get_cfg_from_env(env_prefix: str | None = None) -> dict:
+  """
+  Parses environment variables into a dictionary.
+  If prefix is not provided, an empty dictionary is returned.
+  """
+  if env_prefix is None:
+    return {}
+
+  env_vars = {}
+  prefix = f"{env_prefix}__"
+  for key, value in os.environ.items():
+    if key.startswith(prefix):
+      path = key[len(prefix) :].lower().split("__")
+
+      current_level = env_vars
+      for part in path[:-1]:
+        current_level = current_level.setdefault(part, {})
+      current_level[path[-1]] = value
+  return env_vars

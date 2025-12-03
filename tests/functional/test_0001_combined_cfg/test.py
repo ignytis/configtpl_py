@@ -13,7 +13,7 @@ class TestCombinedCfg(unittest.TestCase):
     return super().setUp()
 
   def test_combined_cfg(self) -> None:
-    cfg = ConfigTpl().build_from_files(
+    cfg = ConfigTpl(env_var_prefix="MY_APP").build_from_files(
       ["config_01.cfg", "config_02.cfg"],
       ctx={"my_context_dict": {"ctx_param": 1234}},
     )
@@ -32,6 +32,7 @@ class TestCombinedCfg(unittest.TestCase):
       "modules": ["module_a", "module_b"],
       "project_name": "my_project",
       "strategies": ["second"],  # lists are replaced (config_01 is replaced with config_02)
+      "test": "test_val",  # from env var because of configured env_var_prefix
     }
 
 
