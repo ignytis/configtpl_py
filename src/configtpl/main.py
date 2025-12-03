@@ -148,7 +148,44 @@ class ConfigTpl:
 
 def _render_tpl(tpl: Template, ctx: dict) -> dict:
   tpl_rendered = tpl.render(ctx)
-  return yaml.safe_load(tpl_rendered)
+  result = yaml.safe_load(tpl_rendered)
+  if result is None:
+    return {}
+
+  return result
+
+
+def _parse_env_var_value(value: str) -> object:  # noqa: PLR0911 too  many return statements
+  """
+  Parses a string value from an environment variable into a typed value.
+  """
+  if not value:
+    return None
+
+  # Values wrapped in single or double quotes are always strings
+  if (value.startswith("'") and value.endswith("'")) or (value.startswith('"') and value.endswith('"')):
+    return value[1:-1]
+
+  # `TRUE` and `FALSE` are converted to corresponding Boolean values.
+  val_upper = value.upper()
+  if val_upper == "TRUE":
+    return True
+  if val_upper == "FALSE":
+    return False
+
+  # If value matches to format of integer of floating point number (consider negative values),
+  # convert to corresponding numbers.
+  try:
+    return int(value)
+  except ValueError:
+    pass
+
+  try:
+    return float(value)
+  except ValueError:
+    pass
+
+  return value
 
 
 def _get_cfg_from_env(env_prefix: str | None = None) -> dict:
@@ -168,5 +205,5 @@ def _get_cfg_from_env(env_prefix: str | None = None) -> dict:
       current_level = env_vars
       for part in path[:-1]:
         current_level = current_level.setdefault(part, {})
-      current_level[path[-1]] = value
+      current_level[path[-1]] = _parse_env_var_value(value)
   return env_vars

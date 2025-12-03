@@ -90,7 +90,48 @@ class ConfigTplEnvVarsTest(TestCase):
       "params": {
         "user_name": "John",
         "greeting": "Hello, John!",
-        # This comes from the env
+        # This comes from the env vars in class decorator
+        "simple_env_var": "simple_env_var_val",
+      },
+    }
+
+  # @patch("pathlib.Path.cwd", return_value="/test/cwd")
+  # @patch("pathlib.Path.home", return_value="/test/home")
+  # @patch("os.path.isfile", return_value=True)
+  # @patch("os.path.getmtime", return_value=123)
+  @patch.dict(
+    os.environ,
+    {
+      "TEST_APP__FOO__BAR": "baz",
+      "TEST_APP__FOO__QUOTED": "'quoted'",
+      "TEST_APP__FOO__QUOTED_SINGLE_INSIDE_DOUBLE": '"single" inside double',
+      "TEST_APP__A_BOOL": "TRUE",
+      "TEST_APP__A_STRING_TRUE": "'true'",
+      "TEST_APP__ANOTHER_BOOL": "false",
+      "TEST_APP__AN_EMPTY_VALUE": "",
+      "TEST_APP__AN_INT": "123",
+      "TEST_APP__A_NEG_INT": "-45",
+      "TEST_APP__A_FLOAT": "1.23",
+      "TEST_APP__A_NEG_FLOAT": "-0.5",
+    },
+  )
+  def test_compile_advanced_env_vars(self, _a: object, _b: object, _c: object, _d: object) -> None:
+    assert self.get_instance().build_from_str("") == {
+      "foo": {
+        "bar": "baz",
+        "quoted": "quoted",
+        "quoted_single_inside_double": '"single" inside double',
+      },
+      "a_bool": True,
+      "a_string_true": "true",
+      "another_bool": False,
+      "an_empty_value": None,
+      "an_int": 123,
+      "a_neg_int": -45,
+      "a_float": 1.23,
+      "a_neg_float": -0.5,
+      # This comes from the env vars in class decorator
+      "params": {
         "simple_env_var": "simple_env_var_val",
       },
     }

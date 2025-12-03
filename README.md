@@ -13,6 +13,7 @@ This library builds configuration in two stages:
   - Reading the environment variables
   - Execution of system commands
   - Hashing
+- Reading parameters from environment variables
 
 # Standard features
 
