@@ -14,6 +14,8 @@ This library builds configuration in two stages:
   - Execution of system commands
   - Hashing
 - Reading parameters from environment variables
+- Builds the configuration from files (`build_from_files` method) and from strinngs (`build_from_str` method)
+- If the environment variable prefix is provided, merges the corresponding environment variables into the configuration.
 
 # Standard features
 
@@ -44,6 +46,13 @@ See also [List of Global Functions](https://tedboy.github.io/jinja2/templ16.html
 | file(path: str)               | Reads the file and returns the contents                        |
 | uuid                          | Generates a UUID e.g `1f6c868d-f9b7-4d3f-b7c9-48048b065019`    |
 
+# Precendence
+
+1. Defaults
+1. Configuration from given files or string
+1. Environment variables, if variable prefix is provided
+1. Overrides
+
 # Examples
 
 You can check the [functional tests folder](tests/functional) for more examples.
@@ -61,11 +70,11 @@ app:
 
 ```yaml
 # my_second_config.cfg
-
 app:
   param2: def
   param3: "{{ app.param1 }}123"
 hash: "{{ app.param1 | md5 }}"
+override: test
 ```
 
 
@@ -75,8 +84,12 @@ hash: "{{ app.param1 | md5 }}"
 import json
 from configtpl.main import ConfigTpl
 
-builder = ConfigTpl()
-cfg = builder.build_from_files(["my_first_config.cfg","my_second_config.cfg"])
+builder = ConfigTpl(
+  defaults={"default": "default_value"},
+  env_var_prefix="MY_APP",
+  overrides={"override": "overridden"},
+)
+cfg = builder.build_from_files(files=["my_first_config.cfg", "my_second_config.cfg"])
 print(json.dumps(cfg, indent=2))
 
 ```
@@ -84,7 +97,7 @@ print(json.dumps(cfg, indent=2))
 ```bash
 # Execution
 
-MY_ENV_VAR=testing python ./app.py
+MY_ENV_VAR=testing MY_APP__NESTED__VAR=hello python ./app.py
 
 # output
 {
@@ -94,6 +107,11 @@ MY_ENV_VAR=testing python ./app.py
     "param2": "def",
     "param3": "abc123"
   },
-  "hash": "900150983cd24fb0d6963f7d28e17f72"
+  "default": "default_value",
+  "hash": "900150983cd24fb0d6963f7d28e17f72",
+  "nested": {
+    "var": "hello"
+  },
+  "override": "overridden"
 }
 ```

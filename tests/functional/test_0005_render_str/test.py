@@ -8,6 +8,7 @@ domain: {{ domain }}
 subdomain: mysite.{{ domain }}
 sample_filter: {{ "abc" | md5 }}
 sample_global: {{ env("SAMPLE_ENV_KEY") }}
+test: this will be overridden by MY_APP__TEST
 file_content:
     {{ file("file_cfg.yaml") | indent(2) }}
 file_content_2:
@@ -25,10 +26,11 @@ class TestRenderStr(unittest.TestCase):
     return super().setUp()
 
   def test_custom_funcs(self) -> None:
-    builder = ConfigTpl()
+    builder = ConfigTpl(env_var_prefix="MY_APP")
     cfg = builder.build_from_str(CFG)
     assert cfg == {
       "domain": "example.com",
+      "test": "test_val",
       "subdomain": "mysite.example.com",
       "sample_filter": "900150983cd24fb0d6963f7d28e17f72",
       "sample_global": "sample_value",

@@ -64,24 +64,23 @@ class ConfigTpl:
     Renders files from provided paths.
 
     Args:
-        ctx (dict | None): additional rendering context which is NOT injected into configuration
-        overrides (dict | None): Overrides are applied at the very end stage after all templates are rendered
         paths (list[str]): Paths to configuration files. Examples:
             ['/opt/myapp/myconfig_first.cfg', '/opt/myapp/myconfig_second.cfg']
+        overrides (dict | None): Overrides are applied at the very end stage after all templates are rendered
+        ctx (dict | None): additional rendering context which is NOT injected into configuration
     Returns:
         dict: The rendered configuration
     """
-    output_cfg, ctx, overrides = self._init_render_params(ctx, overrides)
+    (defaults, ctx, overrides) = _init_dicts(self.defaults, ctx, overrides)
 
+    cfg = deepcopy(defaults)
     for cfg_path_raw in paths:
       cfg_path = os.path.realpath(cfg_path_raw)
-      ctx = {**output_cfg, **ctx}
-      cfg_iter: dict = self._render_cfg_from_file(cfg_path, ctx)
+      ctx_iter = deepcopy({**cfg, **ctx})
+      cfg_iter: dict = self._render_cfg_from_file(cfg_path, ctx_iter)
+      cfg = dict_deep_merge(cfg, cfg_iter)
 
-      output_cfg = dict_deep_merge(output_cfg, cfg_iter)
-
-    # Append overrides
-    return dict_deep_merge(output_cfg, overrides)
+    return self._finalize_cfg(cfg, overrides)
 
   def build_from_str(
     self,
@@ -97,19 +96,16 @@ class ConfigTpl:
         s (str): a Jinja template string which can be rendered into YAML format
         work_dir (str): a working directory.
             Include statements in Jinja template will be resolved relatively to this path
-        ctx (dict | None): additional rendering context which is NOT injected into configuration
         overrides (dict | None): Overrides are applied at the very end stage after all templates are rendered
+        ctx (dict | None): additional rendering context which is NOT injected into configuration
     Returns:
         dict: The rendered configuration
     """
-    output_cfg, ctx, overrides = self._init_render_params(ctx, overrides)
     if work_dir is None:
       work_dir = str(Path.cwd())
-
-    cfg = self._render_cfg_from_str(s, ctx, work_dir)
-    output_cfg = dict_deep_merge(output_cfg, cfg)
-
-    return dict_deep_merge(output_cfg, overrides)
+    (defaults, ctx, overrides) = _init_dicts(self.defaults, ctx, overrides)
+    cfg = self._render_cfg_from_str(s=s, ctx=dict_deep_merge(defaults, ctx), work_dir=work_dir)
+    return self._finalize_cfg(cfg, overrides)
 
   def _render_cfg_from_file(self, path: str, ctx: dict) -> dict:
     """
@@ -127,23 +123,12 @@ class ConfigTpl:
     tpl = jinja_env.from_string(s)
     return _render_tpl(tpl, ctx)
 
-  def _init_render_params(
-    self,
-    ctx: dict | None,
-    overrides: dict | None,
-  ) -> tuple[dict, dict, dict]:
-    """
-    Initializes rendering parameters.
-    """
-    output_cfg = deepcopy(self.defaults)
-    output_cfg = dict_deep_merge(output_cfg, _get_cfg_from_env(self.env_var_prefix))
-
-    if ctx is None:
-      ctx = {}
+  def _finalize_cfg(self, cfg: dict, overrides: dict | None = None) -> dict:
+    """Applies the final steps (env vars and overrides) to the configuration"""
     if overrides is None:
       overrides = {}
-
-    return output_cfg, ctx, overrides
+    cfg = dict_deep_merge(cfg, _get_cfg_from_env(self.env_var_prefix))
+    return dict_deep_merge(cfg, overrides)
 
 
 def _render_tpl(tpl: Template, ctx: dict) -> dict:
@@ -207,3 +192,12 @@ def _get_cfg_from_env(env_prefix: str | None = None) -> dict:
         current_level = current_level.setdefault(part, {})
       current_level[path[-1]] = _parse_env_var_value(value)
   return env_vars
+
+
+def _init_dicts(*ds: dict | None) -> tuple[dict]:
+  """
+  Initializes dictionaries.
+  Returns an original dictionary for each item if dictionary is not None.
+  Falls back to empty dict if argument is None.
+  """
+  return tuple(d if d is not None else {} for d in ds)
