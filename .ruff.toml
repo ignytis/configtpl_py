@@ -1,3 +1,5 @@
+include = ["src/**/*.py", "tests/**/*.py"]
+
 # Exclude a variety of commonly ignored directories.
 exclude = [
     ".bzr",
@@ -55,6 +57,9 @@ mypy-init-return = true
 
 
 [lint.per-file-ignores]
+"docs/*" = [
+    "INP001",  # implicit namespace
+]
 "tests/*" = [
     "INP001",  # file.py is part of implicit namespace package
 
