@@ -7,8 +7,9 @@ from pathlib import Path
 import yaml
 from jinja2 import Template
 
+from .env import get_config_from_env
 from .jinja.env_factory import JinjaEnvFactory
-from .utils.dicts import dict_deep_merge
+from .utils.dicts import dict_deep_merge, dict_init_dicts_from_list
 
 
 class ConfigTpl:
@@ -71,7 +72,7 @@ class ConfigTpl:
     Returns:
         dict: The rendered configuration
     """
-    (defaults, ctx, overrides) = _init_dicts(self.defaults, ctx, overrides)
+    (defaults, ctx, overrides) = dict_init_dicts_from_list(self.defaults, ctx, overrides)
 
     cfg = deepcopy(defaults)
     for cfg_path_raw in paths:
@@ -103,7 +104,7 @@ class ConfigTpl:
     """
     if work_dir is None:
       work_dir = str(Path.cwd())
-    (defaults, ctx, overrides) = _init_dicts(self.defaults, ctx, overrides)
+    (defaults, ctx, overrides) = dict_init_dicts_from_list(self.defaults, ctx, overrides)
     cfg = self._render_cfg_from_str(s=s, ctx=dict_deep_merge(defaults, ctx), work_dir=work_dir)
     return self._finalize_cfg(cfg, overrides)
 
@@ -127,7 +128,7 @@ class ConfigTpl:
     """Applies the final steps (env vars and overrides) to the configuration"""
     if overrides is None:
       overrides = {}
-    cfg = dict_deep_merge(cfg, _get_cfg_from_env(self.env_var_prefix))
+    cfg = dict_deep_merge(cfg, get_config_from_env(self.env_var_prefix))
     return dict_deep_merge(cfg, overrides)
 
 
@@ -138,66 +139,3 @@ def _render_tpl(tpl: Template, ctx: dict) -> dict:
     return {}
 
   return result
-
-
-def _parse_env_var_value(value: str) -> object:  # noqa: PLR0911 too  many return statements
-  """
-  Parses a string value from an environment variable into a typed value.
-  """
-  if not value:
-    return None
-
-  # Values wrapped in single or double quotes are always strings
-  if (value.startswith("'") and value.endswith("'")) or (value.startswith('"') and value.endswith('"')):
-    return value[1:-1]
-
-  # `TRUE` and `FALSE` are converted to corresponding Boolean values.
-  val_upper = value.upper()
-  if val_upper == "TRUE":
-    return True
-  if val_upper == "FALSE":
-    return False
-
-  # If value matches to format of integer of floating point number (consider negative values),
-  # convert to corresponding numbers.
-  try:
-    return int(value)
-  except ValueError:
-    pass
-
-  try:
-    return float(value)
-  except ValueError:
-    pass
-
-  return value
-
-
-def _get_cfg_from_env(env_prefix: str | None = None) -> dict:
-  """
-  Parses environment variables into a dictionary.
-  If prefix is not provided, an empty dictionary is returned.
-  """
-  if env_prefix is None:
-    return {}
-
-  env_vars = {}
-  prefix = f"{env_prefix}__"
-  for key, value in os.environ.items():
-    if key.startswith(prefix):
-      path = key[len(prefix) :].lower().split("__")
-
-      current_level = env_vars
-      for part in path[:-1]:
-        current_level = current_level.setdefault(part, {})
-      current_level[path[-1]] = _parse_env_var_value(value)
-  return env_vars
-
-
-def _init_dicts(*ds: dict | None) -> tuple[dict]:
-  """
-  Initializes dictionaries.
-  Returns an original dictionary for each item if dictionary is not None.
-  Falls back to empty dict if argument is None.
-  """
-  return tuple(d if d is not None else {} for d in ds)

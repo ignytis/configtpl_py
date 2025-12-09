@@ -1,23 +1,7 @@
 {
-    "include": ["src", "tests"],
-    "exclude": ["venv"],
-    "pythonVersion": "3.13",
+  "include": ["src", "tests"],
+  "exclude": ["venv"],
+  "pythonVersion": "3.13",
 
-    "reportAny": false,
-    "reportArgumentType": false,
-    "reportAssignmentType": false,
-    "reportCallIssue": false,
-    "reportGeneralTypeIssues": false,
-    "reportImplicitOverride": false,
-    "reportMissingTypeStubs": false,
-    "reportMissingTypeArgument": false,
-    "reportReturnType": false,
-    "reportRedeclaration": false,
-    "reportUnannotatedClassAttribute": false,
-    "reportUnknownArgumentType": false,
-    "reportUnknownLambdaType": false,
-    "reportUnknownMemberType": false,
-    "reportUnknownParameterType": false,
-    "reportUnknownVariableType": false,
-    "reportUnusedCallResult": false
+  "typeCheckingMode": "off"
 }

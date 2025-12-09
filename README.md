@@ -87,9 +87,11 @@ from configtpl.main import ConfigTpl
 builder = ConfigTpl(
   defaults={"default": "default_value"},
   env_var_prefix="MY_APP",
-  overrides={"override": "overridden"},
 )
-cfg = builder.build_from_files(files=["my_first_config.cfg", "my_second_config.cfg"])
+cfg = builder.build_from_files(
+         paths=["my_first_config.cfg", "my_second_config.cfg"],
+         overrides={"override": "overridden"},
+      )
 print(json.dumps(cfg, indent=2))
 
 ```
@@ -101,17 +103,17 @@ MY_ENV_VAR=testing MY_APP__NESTED__VAR=hello python ./app.py
 
 # output
 {
+  "default": "default_value",
   "app": {
     "param_env": "testing",
     "param1": "abc",
     "param2": "def",
     "param3": "abc123"
   },
-  "default": "default_value",
   "hash": "900150983cd24fb0d6963f7d28e17f72",
+  "override": "overridden",
   "nested": {
     "var": "hello"
-  },
-  "override": "overridden"
+  }
 }
 ```

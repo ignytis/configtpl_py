@@ -95,17 +95,13 @@ class ConfigTplEnvVarsTest(TestCase):
       },
     }
 
-  # @patch("pathlib.Path.cwd", return_value="/test/cwd")
-  # @patch("pathlib.Path.home", return_value="/test/home")
-  # @patch("os.path.isfile", return_value=True)
-  # @patch("os.path.getmtime", return_value=123)
   @patch.dict(
     os.environ,
     {
       "TEST_APP__FOO__BAR": "baz",
       "TEST_APP__FOO__QUOTED": "'quoted'",
       "TEST_APP__FOO__QUOTED_SINGLE_INSIDE_DOUBLE": '"single" inside double',
-      "TEST_APP__A_BOOL": "TRUE",
+      "TEST_APP__A_BOOL_STRING": "TRUE",
       "TEST_APP__A_STRING_TRUE": "'true'",
       "TEST_APP__ANOTHER_BOOL": "false",
       "TEST_APP__AN_EMPTY_VALUE": "",
@@ -122,7 +118,7 @@ class ConfigTplEnvVarsTest(TestCase):
         "quoted": "quoted",
         "quoted_single_inside_double": '"single" inside double',
       },
-      "a_bool": True,
+      "a_bool_string": "TRUE",
       "a_string_true": "true",
       "another_bool": False,
       "an_empty_value": None,

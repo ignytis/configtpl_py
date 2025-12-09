@@ -19,3 +19,12 @@ def dict_deep_merge(*dicts: dict[str, object]) -> dict[str, object]:
     result = merge_two_dicts(result, d)
 
   return result
+
+
+def dict_init_dicts_from_list(*ds: dict | None) -> tuple[dict]:
+  """
+  Initializes dictionaries.
+  Returns an original dictionary for each item if dictionary is not None.
+  Falls back to empty dict if argument is None.
+  """
+  return tuple(d if d is not None else {} for d in ds)
