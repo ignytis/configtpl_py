@@ -73,6 +73,7 @@ class ConfigTpl:
     paths: list[str],
     overrides: dict | None = None,
     ctx: dict | None = None,
+    file_type: ConfigFormat | str | None = None,
   ) -> dict:
     """
     Renders files from provided paths.
@@ -91,7 +92,7 @@ class ConfigTpl:
     for cfg_path_raw in paths:
       cfg_path = os.path.realpath(cfg_path_raw)
       ctx_iter = deepcopy({**cfg, **ctx})
-      cfg_iter: dict = self._render_cfg_from_file(cfg_path, ctx_iter)
+      cfg_iter: dict = self._render_cfg_from_file(cfg_path, ctx_iter, file_type)
       cfg = dict_deep_merge(cfg, cfg_iter)
 
     return self._finalize_cfg(cfg, overrides)

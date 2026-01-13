@@ -3,11 +3,11 @@
 This library builds configuration in two stages:
 
 1. Renders the provided configuration as Jinja templates
-1. Parses the rendered data as YAML file
+1. Parses the rendered data as file with the specified format
 
 # Features
 
-- Uses Jinja2 and Yaml capabilities to build a dynamic configuration
+- Uses Jinja2 capabilities to build a dynamic configuration
 - Multiple configuration files might be passed. The library merges all of them into single config.
 - Basic confuration includes Jinja functions and filters for general-purpose tasks:
   - Reading the environment variables
@@ -60,6 +60,7 @@ _You try run this example in the [docs/examples/readme]() directory by running t
 The [functional tests folder](tests/functional) might be useful for more examples.
 
 A very simple example of usage is provided below:
+_This example uses YAML format which requires the yaml extra to be installed._
 
 ```yaml
 # my_first_config.cfg
@@ -86,7 +87,7 @@ param1_duplicated: "{{ str_duplicate(app.param1, 3) }}"
 # app.py
 import json
 
-from configtpl.main import ConfigTpl
+from configtpl.main import ConfigTpl, ConfigFormat
 
 
 def filter_str_rev(value: str) -> str:
@@ -110,6 +111,7 @@ builder = ConfigTpl(
 cfg = builder.build_from_files(
   paths=["my_first_config.cfg", "my_second_config.cfg"],
   overrides={"override": "overridden"},
+  file_type=ConfigFormat.YAML,
 )
 print(json.dumps(cfg, indent=2))  # noqa: T201
 
