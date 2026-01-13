@@ -1,15 +1,28 @@
+import json
 import os
 import os.path
+import tomllib
 from collections.abc import Callable
 from copy import deepcopy
+from enum import StrEnum
 from pathlib import Path
 
-import yaml
+try:
+  import yaml
+except ImportError:
+  yaml = None
+
 from jinja2 import Template
 
 from .env import get_config_from_env
 from .jinja.env_factory import JinjaEnvFactory
 from .utils.dicts import dict_deep_merge, dict_init_dicts_from_list
+
+
+class ConfigFormat(StrEnum):
+  JSON = "json"
+  YAML = "yaml"
+  TOML = "toml"
 
 
 class ConfigTpl:
@@ -89,40 +102,68 @@ class ConfigTpl:
     work_dir: str | None = None,
     overrides: dict | None = None,
     ctx: dict | None = None,
+    file_type: ConfigFormat | str = ConfigFormat.JSON,
   ) -> dict:
     """
     Renders config from string.
 
     Args:
-        s (str): a Jinja template string which can be rendered into YAML format
+        s (str): a Jinja template string which can be rendered into [JSON, YAML, TOML] format
         work_dir (str): a working directory.
             Include statements in Jinja template will be resolved relatively to this path
         overrides (dict | None): Overrides are applied at the very end stage after all templates are rendered
         ctx (dict | None): additional rendering context which is NOT injected into configuration
+        file_type (ConfigFormat | str): the format of the string, default is JSON
     Returns:
         dict: The rendered configuration
     """
     if work_dir is None:
       work_dir = str(Path.cwd())
     (defaults, ctx, overrides) = dict_init_dicts_from_list(self.defaults, ctx, overrides)
-    cfg = self._render_cfg_from_str(s=s, ctx=dict_deep_merge(defaults, ctx), work_dir=work_dir)
+    cfg = self._render_cfg_from_str(s=s, ctx=dict_deep_merge(defaults, ctx), work_dir=work_dir, file_type=file_type)
     return self._finalize_cfg(cfg, overrides)
 
-  def _render_cfg_from_file(self, path: str, ctx: dict) -> dict:
+  def _render_cfg_from_file(self, path: str, ctx: dict, file_type: ConfigFormat | str | None = None) -> dict:
     """
     Renders a template file into config dictionary in two steps:
     1. Renders a file as Jinja template
-    2. Parses the rendered file as YAML template
+    2. Parses the rendered file as [JSON, YAML, TOML] template
     """
     p = Path(path)
     jinja_env = self.jinja_env_factory.get_fs_jinja_environment(p.parent)
     tpl = jinja_env.get_template(p.name)
-    return _render_tpl(tpl, ctx)
 
-  def _render_cfg_from_str(self, s: str, ctx: dict, work_dir: str) -> dict:
+    if file_type is None:
+      ext = p.suffix.lower()
+      if ext == ".json":
+        file_type = ConfigFormat.JSON
+      elif ext == ".toml":
+        file_type = ConfigFormat.TOML
+      elif ext in (".yaml", ".yml"):
+        file_type = ConfigFormat.YAML
+      else:
+        # Fall back to JSON
+        file_type = ConfigFormat.JSON
+
+    if isinstance(file_type, str):
+      file_type = ConfigFormat(file_type)
+
+    return _render_tpl(tpl, ctx, fmt=file_type)
+
+  def _render_cfg_from_str(
+    self,
+    s: str,
+    ctx: dict,
+    work_dir: str,
+    file_type: ConfigFormat | str = ConfigFormat.JSON,
+  ) -> dict:
     jinja_env = self.jinja_env_factory.get_fs_jinja_environment(work_dir)
     tpl = jinja_env.from_string(s)
-    return _render_tpl(tpl, ctx)
+
+    if isinstance(file_type, str):
+      file_type = ConfigFormat(file_type)
+
+    return _render_tpl(tpl, ctx, fmt=file_type)
 
   def _finalize_cfg(self, cfg: dict, overrides: dict | None = None) -> dict:
     """Applies the final steps (env vars and overrides) to the configuration"""
@@ -132,10 +173,19 @@ class ConfigTpl:
     return dict_deep_merge(cfg, overrides)
 
 
-def _render_tpl(tpl: Template, ctx: dict) -> dict:
+def _render_tpl(tpl: Template, ctx: dict, fmt: ConfigFormat = ConfigFormat.JSON) -> dict:
   tpl_rendered = tpl.render(ctx)
-  result = yaml.safe_load(tpl_rendered)
-  if result is None:
-    return {}
+  if fmt == ConfigFormat.JSON:
+    return json.loads(tpl_rendered)
+  if fmt == ConfigFormat.TOML:
+    return tomllib.loads(tpl_rendered)
+  if fmt == ConfigFormat.YAML:
+    if yaml is None:
+      msg = "PyYAML is not installed. Please install 'configtpl[yaml]'."
+      raise ImportError(msg)
+    result = yaml.safe_load(tpl_rendered)
+    if result is None:
+      return {}
+    return result
 
-  return result
+  return {}

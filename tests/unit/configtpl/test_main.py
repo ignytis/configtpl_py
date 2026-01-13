@@ -38,7 +38,7 @@ class ConfigTplSimpleTest(TestCase):
 
   @patch("builtins.open", new_callable=mock_open, read_data=FILE_CONFIG_CONTENTS_SIMPLE)
   def test_compile_simple(self, _a: object, _b: object, _c: object, _d: object, _e: object) -> None:
-    assert self.get_instance().build_from_files("/test/sample.cfg") == CONFIG_COMPILED_SIMPLE
+    assert self.get_instance().build_from_files(["/test/sample.yaml"]) == CONFIG_COMPILED_SIMPLE
 
   @patch("builtins.open", new_callable=mock_open, read_data=FILE_CONFIG_CONTENTS_SIMPLE)
   def test_compile_simple_override(self, _a: object, _b: object, _c: object, _d: object, _e: object) -> None:
@@ -49,7 +49,7 @@ class ConfigTplSimpleTest(TestCase):
       "greeting": "Overridden greeting",
     }
     assert cfg_compiled == self.get_instance().build_from_files(
-      "/test/sample.cfg",
+      ["/test/sample.yaml"],
       overrides={
         "params": {
           "some_param": "some_param_val1",
@@ -60,7 +60,7 @@ class ConfigTplSimpleTest(TestCase):
 
   @patch("builtins.open", new_callable=mock_open, read_data=FILE_CONFIG_CONTENTS_COMPOSITE_FIRST)
   def test_compile_composite(self, _a: object, _b: object, _c: object, _d: object, _e: object) -> None:
-    assert self.get_instance().build_from_files("/test/sample.cfg") == {
+    assert self.get_instance().build_from_files(["/test/sample.yaml"]) == {
       "params": {
         "user_name": "John",
         "greeting": "Hello, John!",
@@ -86,7 +86,7 @@ class ConfigTplSimpleTest(TestCase):
 class ConfigTplEnvVarsTest(TestCase):
   @patch("builtins.open", new_callable=mock_open, read_data=FILE_CONFIG_CONTENTS_COMPOSITE_FIRST)
   def test_compile_composite(self, _a: object, _b: object, _c: object, _d: object, _e: object) -> None:
-    assert self.get_instance().build_from_files("/test/sample.cfg") == {
+    assert self.get_instance().build_from_files(["/test/sample.yaml"]) == {
       "params": {
         "user_name": "John",
         "greeting": "Hello, John!",
@@ -112,7 +112,7 @@ class ConfigTplEnvVarsTest(TestCase):
     },
   )
   def test_compile_advanced_env_vars(self, _a: object, _b: object, _c: object, _d: object) -> None:
-    assert self.get_instance().build_from_str("") == {
+    assert self.get_instance().build_from_str("{}") == {
       "foo": {
         "bar": "baz",
         "quoted": "quoted",

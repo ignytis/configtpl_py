@@ -4,16 +4,17 @@ from configtpl.main import ConfigTpl
 
 CFG = """\
 {% set domain = "example.com" %}
-domain: {{ domain }}
-subdomain: mysite.{{ domain }}
-sample_filter: {{ "abc" | md5 }}
-sample_global: {{ env("SAMPLE_ENV_KEY") }}
-test: this will be overridden by MY_APP__TEST
-file_content:
-    {{ file("file_cfg.yaml") | indent(2) }}
-file_content_2:
-    {% include "file_cfg.yaml" %}\
-"""
+{
+  "domain": "{{ domain }}",
+  "subdomain": "mysite.{{ domain }}",
+  "sample_filter": "{{ "abc" | md5 }}",
+  "sample_global": "{{ env("SAMPLE_ENV_KEY") }}",
+  "test": "this will be overridden by MY_APP__TEST",
+  "file_content":
+    {{ file("file_cfg.cfg") | indent(4) }},
+  "file_content_2":
+    {% include "file_cfg.cfg" %}
+}"""
 
 
 class TestRenderStr(unittest.TestCase):
